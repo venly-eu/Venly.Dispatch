@@ -10,9 +10,17 @@ public class QueryLoggingBehavior<TQuery, TResult>(ILogger<QueryLoggingBehavior<
 {
     public async Task<TResult> Handle(TQuery query, Func<Task<TResult>> next, CancellationToken cancellationToken = default)
     {
-        logger.LogInformation("Handling query {Query}", typeof(TQuery).Name);
-        var result = await next();
-        logger.LogInformation("Handled query {Query}", typeof(TQuery).Name);
-        return result;
+        try
+        {
+            logger.LogInformation("Handling query {Query}", typeof(TQuery).Name);
+            var result = await next();
+            logger.LogInformation("Handled query {Query}", typeof(TQuery).Name);
+            return result;
+        }
+        catch(Exception ex)
+        {
+            logger.LogError(ex, "Error handling query {Query}", typeof(TQuery).Name);
+            throw;
+        }
     }
 }

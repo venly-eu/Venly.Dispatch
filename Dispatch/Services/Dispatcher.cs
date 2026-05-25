@@ -1,4 +1,3 @@
-using System.Reflection.Metadata;
 using Venly.Dispatch.Interfaces;
 using Venly.Dispatch.Interfaces.Messaging;
 using Microsoft.Extensions.DependencyInjection;
@@ -28,8 +27,10 @@ public class Dispatcher(IServiceProvider serviceProvider) : IDispatcher
         var next = (Func<Task<TResult>>)(() => handler.Handle((dynamic)command, cancellationToken));
         foreach (var behavior in behaviors.Reverse())
         {
+            if (behavior is null) continue;
+            
             var currentNext = next;
-            next = () => ((dynamic)behavior!).Handle((dynamic)command, currentNext, cancellationToken);
+            next = () => ((dynamic)behavior).Handle((dynamic)command, currentNext, cancellationToken);
         }
 
         return await next();
@@ -54,23 +55,26 @@ public class Dispatcher(IServiceProvider serviceProvider) : IDispatcher
         var next = (Func<Task<TResult>>)(() => handler.Handle((dynamic)query, cancellationToken));
         foreach (var behavior in behaviors.Reverse())
         {
+            if (behavior is null) continue;
+            
             var currentNext = next;
-            next = () => ((dynamic)behavior!).Handle((dynamic)query, currentNext, cancellationToken);
+            next = () => ((dynamic)behavior).Handle((dynamic)query, currentNext, cancellationToken);
         }
 
         return await next();
     }
 
-    public async Task PublishAsync(INotification notification, CancellationToken cancellationToken = default)
+    public async Task PublishAsync<TNotification>(TNotification notification, CancellationToken cancellationToken = default)
     {
         var handlerType = typeof(INotificationHandler<>)
-            .MakeGenericType(notification.GetType());
+            .MakeGenericType(notification!.GetType());
 
         var handlers = serviceProvider.GetServices(handlerType);
 
         foreach (var handler in handlers)
         {
-            await ((dynamic)handler!).Handle((dynamic)notification, cancellationToken);
+            if (handler is null) continue;
+            await ((dynamic)handler).Handle((dynamic)notification, cancellationToken);
         }
     }
 }

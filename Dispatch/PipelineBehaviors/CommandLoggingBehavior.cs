@@ -11,8 +11,17 @@ public class CommandLoggingBehavior<TCommand, TResult>(ILogger<CommandLoggingBeh
     public async Task<TResult> Handle(TCommand command, Func<Task<TResult>> next, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Handling command {Command}", typeof(TCommand).Name);
-        var result = await next();
-        logger.LogInformation("Handled command {Command}", typeof(TCommand).Name);
-        return result;
+    
+        try
+        {
+            var result = await next();
+            logger.LogInformation("Handled command {Command}", typeof(TCommand).Name);
+            return result;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error handling command {Command}", typeof(TCommand).Name);
+            throw;
+        }
     }
 }

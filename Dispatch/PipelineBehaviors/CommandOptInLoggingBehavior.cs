@@ -14,14 +14,22 @@ public class CommandOptInLoggingBehavior<TCommand, TResult>(ILogger<CommandOptIn
     {
         var shouldLog = typeof(TCommand).GetCustomAttribute<LoggedAttribute>() is not null;
         
-        if (shouldLog) 
-            logger.LogInformation("Handling command {Command}", typeof(TCommand).Name);
-        
-        var result = await next();
-        
-        if(shouldLog) 
-            logger.LogInformation("Handled command {Command}", typeof(TCommand).Name);
-        
-        return result;
+        try
+        {
+            if (shouldLog)
+                logger.LogInformation("Handling command {Command}", typeof(TCommand).Name);
+
+            var result = await next();
+
+            if (shouldLog)
+                logger.LogInformation("Handled command {Command}", typeof(TCommand).Name);
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error handling command {Command}", typeof(TCommand).Name);
+            throw;
+        }
     }
 }

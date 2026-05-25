@@ -1,4 +1,3 @@
-
 namespace Venly.Dispatch.Interfaces;
 
 public interface IQueryHandler<in TQuery, TResult> : IHandler

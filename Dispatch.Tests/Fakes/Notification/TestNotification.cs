@@ -3,7 +3,7 @@ using Venly.Dispatch.Interfaces.Messaging;
 
 namespace Venly.Dispatch.Tests.Fakes.Notification;
 
-public record TestNotification : INotification;
+public record TestNotification;
 
 
 public class TestNotificationFirstHandler : INotificationHandler<TestNotification>

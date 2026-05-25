@@ -14,13 +14,21 @@ public class QueryOptInLoggingBehavior<TQuery, TResult>(ILogger<QueryOptInLoggin
     {
         var shouldLog = typeof(TQuery).GetCustomAttribute<LoggedAttribute>() is not null;
 
-        if (shouldLog) 
-            logger.LogInformation("Handling query {Query}", typeof(TQuery).Name);
+        try
+        {
+            if (shouldLog) 
+                logger.LogInformation("Handling query {Query}", typeof(TQuery).Name);
         
-        var result = await next();
+            var result = await next();
         
-        if (shouldLog) 
-            logger.LogInformation("Handled query {Query}", typeof(TQuery).Name);
-        return result;
+            if (shouldLog) 
+                logger.LogInformation("Handled query {Query}", typeof(TQuery).Name);
+            return result;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error handling query {Query}", typeof(TQuery).Name);
+            throw;
+        }
     }
 }

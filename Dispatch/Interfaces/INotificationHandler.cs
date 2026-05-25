@@ -1,8 +1,6 @@
-using Venly.Dispatch.Interfaces.Messaging;
-
 namespace Venly.Dispatch.Interfaces;
 
-public interface INotificationHandler<in TNotification> where TNotification : INotification
+public interface INotificationHandler<in TNotification>
 {
     Task Handle(TNotification notification, CancellationToken cancellationToken = default);
 }
